@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <time.h>
+#include <thread>
 
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
@@ -188,7 +189,7 @@ int main()
 	magCalc(hInc, hRed, mDip, pDip, 0.001*(double)stoi(simSize, nullptr, 10), lineCounter, intResSize);
 	t_f = clock();
 
-	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
+	cout << "Computation completed in " << (t_f - t_i) / (std::thread::hardware_concurrency() * CLOCKS_PER_SEC) << " seconds!" << endl;
 
 	/*---------------WRITE OUTPUT-----------------------------*/
 

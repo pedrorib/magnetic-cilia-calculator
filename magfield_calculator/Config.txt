@@ -1,6 +1,8 @@
-C:\Users\pedro\Desktop\teste_displacement.txt
+./input/teste_displacement.txt
 0.0001
 3
-128
-C:\Users\pedro\Desktop\teste_openmp.txt
+500
+./output/teste_openmp.log
+
+ro\Desktop\teste_openmp.txt
 
