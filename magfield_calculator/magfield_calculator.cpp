@@ -24,7 +24,8 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 
 	using namespace std;
 	for (int i = 0; i < gridSize; i++) {
-		cout << "Computation - " << 100 * (double)i / gridSize << "% complete" << endl;
+		if(i%100 == 0)
+			cout << "Computation - " << 100 * (double)i / gridSize << "% complete" << endl;
 		for (int j = 0; j < gridSize; j++) {
 			tempX = 0;
 			tempY = 0;
@@ -32,7 +33,7 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 
 #if PARALLEL == 1
 
-#pragma omp parallel for 
+#pragma omp parallel for
 			for (int k = 0; k < inputSize; k++) {
 				currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
 				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
@@ -49,8 +50,6 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 			destination[i][j].x = tempX;
 			destination[i][j].y = tempY;
 			destination[i][j].z = tempZ;
-		}
-	}
 
 #else
 			for (int k = 0; k < inputSize; k++) {
@@ -69,6 +68,8 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 			destination[i][j].y = tempY;
 			destination[i][j].z = tempZ;
 #endif
+}
+}
 }
 
 int main(int argc, char* argv[])
@@ -138,7 +139,7 @@ int main(int argc, char* argv[])
 	cout << "Maximum # of dipoles: " << MAXDIPSIZE << endl;
 
 	/*-----------------ALLOCATION----------------*/
-	
+
 	cout << "Allocating space...";
 
 	vec *hInc, **pInc, *pDip, *mDip, **hRed;
@@ -179,7 +180,7 @@ int main(int argc, char* argv[])
 		if (buffer.empty() || (buffer.find("%") == 0)) {
 			continue;
 		}
-		
+
 		istringstream ss(buffer);
 		ss >> bufferPos.x >> bufferPos.y >> bufferPos.z >> pDip[lineCounter].x >> pDip[lineCounter].y >> pDip[lineCounter].z;
 		if (bufferPos.z == 0)
@@ -198,7 +199,7 @@ int main(int argc, char* argv[])
 	pDip = (vec *)realloc(pDip, (lineCounter + 1) * sizeof(vec)); //# of lines determined -> DEFLATE
 	mDip = (vec *)realloc(mDip, (lineCounter + 1) * sizeof(vec));
 	hInc = (vec *)realloc(hInc, (lineCounter + 1) * sizeof(vec));
-	
+
 	/*---------------COMPUTE MAGNETIZATION VECTOR----------------*/
 
 	for (int i = 0; i < lineCounter - repCounter; i++) {
@@ -214,7 +215,7 @@ int main(int argc, char* argv[])
 	/*----------DEGUG ONLY -> DUMP POS AND MAG--------------*/
 
 #if DEBUG == 1
-	
+
 	ofstream mDipFile, pDipFile;
 
 	pDipFile.open("C:\\Users\\pedro\\Desktop\\pDip.txt");
@@ -253,7 +254,11 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
 #else
+#if PARALLEL == 1
 	cout << "Computation completed in " << (t_f - t_i) / (std::thread::hardware_concurrency() * CLOCKS_PER_SEC) << " seconds!" << endl;
+#else
+	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
+#endif
 #endif // WIN32
 
 	/*---------------WRITE OUTPUT-----------------------------*/
@@ -261,7 +266,7 @@ int main(int argc, char* argv[])
 	ofstream sendOutput;
 
 	sendOutput.open(outputFile);
-	
+
 	cout << "Sending data to " << outputFile << endl << "...";
 
 	sendOutput << "Magfield calculator - openMP version" << endl;
