@@ -28,6 +28,7 @@ public:
 	friend vec cross(const vec&, const vec&);
 	friend double operator^(const vec&, double);
 	vec operator=(vec seg);
+	vec operator+=(vec seg);
 	friend std::ostream& operator<<(std::ostream& os, const vec& out);
 	friend vec operator+(const vec &pri, const vec &seg);
 	friend vec operator*(const vec &a, double b);

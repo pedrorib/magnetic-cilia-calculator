@@ -48,6 +48,14 @@ vec vec::operator=(vec seg) {
 	return *this;
 }
 
+vec vec::operator+=(vec seg) {
+	x = x + seg.x;
+	y = y + seg.y;
+	z = z + seg.z;
+	return *this;
+}
+
+
 std::ostream& operator<<(std::ostream& os, const vec& out) {
 	os << out.x << "\t" << out.y << "\t" << out.z;
 	return os;

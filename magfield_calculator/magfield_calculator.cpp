@@ -6,44 +6,78 @@
 #include <string>
 #include <iostream>
 #include <time.h>
+#include <windows.h>
 
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
 #define DEBUG 0
-
+#define PARALLEL 1
 
 void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posDipoles, double dim, int inputSize, unsigned int gridSize) {
-	
-	vec currPos(0, 0, 0);
-	vec r;
+
+	vec *r, *currPos;
+	double tempX, tempY, tempZ;
+
+	r = (vec *)malloc(inputSize * sizeof(vec));
+	currPos = (vec *)malloc(inputSize * sizeof(vec));
+
 
 	using namespace std;
-
 	for (int i = 0; i < gridSize; i++) {
 		cout << "Computation - " << 100 * (double)i / gridSize << "% complete" << endl;
-	#pragma omp parallel for 
 		for (int j = 0; j < gridSize; j++) {
-			destination[i][j].x = 0;
-			destination[i][j].y = 0;
-			destination[i][j].z = 0;
-			currPos.x = dim / 2 + dim * (double)i / (double)127;
-			currPos.y = dim / 2 - dim * (double)j / (double)127;
+			tempX = 0;
+			tempY = 0;
+			tempZ = 0;
+
+#if PARALLEL == 1
+
+#pragma omp parallel for 
 			for (int k = 0; k < inputSize; k++) {
-				r = posDipoles[k] - currPos;
-				calculatedField[k] = 1E-7*((double)3 * r * (magDipoles[k] * r)) / pow(r.abs(), 5) - magDipoles[k] / pow(r.abs(), 3);
+				currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
+				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
+				currPos[k].z = 0;
+				r[k] = currPos[k] - posDipoles[k];
+				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k])) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3);
 			}
+#pragma omp parallel for reduction(+: tempX) reduction(+: tempY) reduction(+: tempZ)
 			for (int k = 0; k < inputSize; k++) {
-				destination[i][j] = destination[i][j] + calculatedField[k];
+				tempX += calculatedField[k].x;
+				tempY += calculatedField[k].y;
+				tempZ += calculatedField[k].z;
 			}
+			destination[i][j].x = tempX;
+			destination[i][j].y = tempY;
+			destination[i][j].z = tempZ;
 		}
 	}
+
+#else
+			for (int k = 0; k < inputSize; k++) {
+				currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
+				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
+				currPos[k].z = 0;
+				r[k] = currPos[k] - posDipoles[k];
+				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k])) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3);
+			}
+			for (int k = 0; k < inputSize; k++) {
+				tempX += calculatedField[k].x;
+				tempY += calculatedField[k].y;
+				tempZ += calculatedField[k].z;
+			}
+			destination[i][j].x = tempX;
+			destination[i][j].y = tempY;
+			destination[i][j].z = tempZ;
+#endif
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	using namespace std;
 
 	string dataPath, magMoment, simSize, userInput, resSize, outputFile;
+
+	bool flagSilent = false;
 
 	fstream config;
 	config.open("Config.txt", fstream::in | fstream::out);
@@ -53,44 +87,62 @@ int main()
 	getline(config, resSize);
 	getline(config, outputFile);
 
-	cout << "Paste path to mechanical data location (" << dataPath << ")" << endl;
-	getline(cin, userInput);
-	if (!userInput.empty())
-		dataPath = userInput;
-	cout << "Pillar magnetic moment (" << magMoment << " T)" << endl;
-	getline(cin, userInput);
-	if (!userInput.empty())
-		magMoment = userInput;
-	cout << "Square area under study - edge size? (" << simSize << " mm)" << endl;
-	getline(cin, userInput);
-	if (!userInput.empty())
-		simSize = userInput;
-	cout << "Grid size (" << resSize << ")" << endl;
-	getline(cin, userInput);
-	if (!userInput.empty())
-		resSize = userInput;
-	cout << "Output file (" << outputFile << ")" << endl;
-	getline(cin, userInput);
-	if (!userInput.empty())
-		outputFile = userInput;
-		
-	config.clear();
-	config.seekg(0, ios::beg);
-	config << dataPath << endl;
-	config << magMoment << endl;
-	config << simSize << endl;
-	config << resSize << endl;
-	config << outputFile << endl;
-	config.close();
+	if (argc == 3) {
+		if (strcmp(argv[1], "-s"))
+			bool flagSilent = true;
+		else {
+			cout << "Unknown flag (" << argv[1] << ")" << endl;
+			return 0;
+		}
+		dataPath = argv[2];
+	}
+	else if (argc > 3) {
+		cout << "Too many arguments" << endl;
+		return 0;
+	}
+
+
+	if (!flagSilent) {
+		cout << "Paste path to mechanical data location (" << dataPath << ")" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			dataPath = userInput;
+		cout << "Pillar magnetic moment (" << magMoment << " A/m)" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			magMoment = userInput;
+		cout << "Square area under study - edge size? (" << simSize << " mm)" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			simSize = userInput;
+		cout << "Grid size (" << resSize << ")" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			resSize = userInput;
+		cout << "Output file (" << outputFile << ")" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			outputFile = userInput;
+
+		config.clear();
+		config.seekg(0, ios::beg);
+		config << dataPath << endl;
+		config << magMoment << endl;
+		config << simSize << endl;
+		config << resSize << endl;
+		config << outputFile << endl;
+		config.close();
+	}
 
 	cout << "Grid size -> " << resSize << "x" << resSize << endl;
 	cout << "Maximum # of dipoles: " << MAXDIPSIZE << endl;
 
 	/*-----------------ALLOCATION----------------*/
-
+	
 	cout << "Allocating space...";
 
 	vec *hInc, **pInc, *pDip, *mDip, **hRed;
+	vec temp(0,0,0);
 	unsigned int intResSize;
 
 	intResSize = stoi(resSize, nullptr, 10);
@@ -133,6 +185,7 @@ int main()
 		if (bufferPos.z == 0)
 			repCounter++;
 		pDip[lineCounter] = pDip[lineCounter] + bufferPos;
+		pDip[lineCounter].z = pDip[lineCounter].z + .01;
 		lineCounter++;
 	}
 
@@ -140,6 +193,7 @@ int main()
 
 	cout << lineCounter + 1 << " data points read! - Optimizing memory allocation" << endl;
 	cout << "Z increases every " << repCounter << " lines." << endl;
+	cout << "Magnetization of each dipole: " << stod(magMoment, nullptr) / (double)lineCounter << " A.m2" << endl;
 
 	pDip = (vec *)realloc(pDip, (lineCounter + 1) * sizeof(vec)); //# of lines determined -> DEFLATE
 	mDip = (vec *)realloc(mDip, (lineCounter + 1) * sizeof(vec));
@@ -154,21 +208,28 @@ int main()
 		mDip[i] = mDip[i - repCounter];
 	}
 	for (int i = 0; i < lineCounter; i++) {
-		mDip[i] = stod(magMoment, nullptr)*mDip[i]/(double) lineCounter;
+		mDip[i] = -stod(magMoment, nullptr)*mDip[i] / (double)lineCounter;
 	}
 
 	/*----------DEGUG ONLY -> DUMP POS AND MAG--------------*/
 
 #if DEBUG == 1
+	
+	ofstream mDipFile, pDipFile;
+
+	pDipFile.open("C:\\Users\\pedro\\Desktop\\pDip.txt");
+	mDipFile.open("C:\\Users\\pedro\\Desktop\\mDip.txt");
 
 	for (int i = 0; i < lineCounter; i++) {
 		cout << mDip[i] << endl;
+		pDipFile << pDip[i] << endl;
 	}
 
 	cout << "\n" << "SEPARATOR" << "\n" << endl;
 
 	for (int i = 0; i < lineCounter; i++) {
 		cout << pDip[i] << endl;
+		mDipFile << mDip[i] << endl;
 	}
 
 	getchar();
@@ -182,10 +243,11 @@ int main()
 	cout << "This may take some time..." << endl;
 
 	clock_t t;
-	double t_i, t_f;
+	double t_i, t_f, dSimSize;
 
+	dSimSize = 0.001*stod(simSize, nullptr);
 	t_i = clock();
-	magCalc(hInc, hRed, mDip, pDip, 0.001*(double)stoi(simSize, nullptr, 10), lineCounter, intResSize);
+	magCalc(hInc, hRed, mDip, pDip, 0.001*stod(simSize, nullptr), lineCounter, intResSize);
 	t_f = clock();
 
 #ifdef _WIN32
@@ -208,9 +270,11 @@ int main()
 
 	for (int i = 0; i < intResSize; i++) {
 		for (int j = 0; j < intResSize; j++) {
-			sendOutput << hRed[i][j] << "\t";
+			temp.x = -dSimSize / 2 + dSimSize * (double)i / (double)(intResSize - 1);
+			temp.y = -dSimSize / 2 + dSimSize * (double)j / (double)(intResSize - 1);
+			sendOutput << temp << "\t" << hRed[i][j] << endl;
 		}
-		sendOutput << endl;
+		//sendOutput << endl;
 	}
 
 	cout << "DONE" << endl;
