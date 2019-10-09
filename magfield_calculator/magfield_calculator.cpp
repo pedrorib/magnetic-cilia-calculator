@@ -6,7 +6,6 @@
 #include <string>
 #include <iostream>
 #include <time.h>
-#include <windows.h>
 
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
