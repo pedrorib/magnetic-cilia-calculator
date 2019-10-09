@@ -262,3 +262,6 @@ __pycache__/
 
 # OUTPUT FILES
 *.log
+
+#CONFIG FILE
+**/Config.txt

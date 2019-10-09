@@ -189,7 +189,12 @@ int main()
 	magCalc(hInc, hRed, mDip, pDip, 0.001*(double)stoi(simSize, nullptr, 10), lineCounter, intResSize);
 	t_f = clock();
 
+#ifdef _WIN32
+	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
+#else
 	cout << "Computation completed in " << (t_f - t_i) / (std::thread::hardware_concurrency() * CLOCKS_PER_SEC) << " seconds!" << endl;
+#endif // WIN32
+
 
 	/*---------------WRITE OUTPUT-----------------------------*/
 
