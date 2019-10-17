@@ -153,10 +153,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="mag_functions.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="veclib.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="mag_functions.cpp" />
     <ClCompile Include="magfield_calculator.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
