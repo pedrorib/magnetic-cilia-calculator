@@ -1,11 +1,8 @@
-./input/teste_displacement.txt
-1
+C:\Users\pedro\Desktop\teste_displacement.txt
+C:\Users\pedro\Desktop\pillar_location.txt
+0.022
 3
-512
-./output/teste_openmp.txt
-
-e_openmp.txt
-ste_openmp.txt
-mp.txt
+50
+C:\Users\pedro\Desktop\teste_openmp.txt
 
 
