@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
 	using namespace std;
 
-	string dataPath, magMoment, simSize, userInput, resSize, outputFile, pillarPath;
+	string dataPath, magMoment, simSize, userInput, resSize, outputFile, pillarPath, rotation;
 
 	bool flagSilent = false;
 
@@ -26,15 +26,17 @@ int main(int argc, char* argv[])
 	config.open("Config.txt", fstream::in | fstream::out);
 	getline(config, dataPath);
 	getline(config, pillarPath);
+	getline(config, rotation);
 	getline(config, magMoment);
 	getline(config, simSize);
 	getline(config, resSize);
 	getline(config, outputFile);
 
-	if (argc == 3) {
+	if (argc == 4) {
 		flagSilent = true;
 		dataPath = argv[1];
 		outputFile = argv[2];
+		rotation = argv[3];
 	}
 	else if (argc > 3) {
 		cout << "Too many arguments" << endl;
@@ -51,6 +53,10 @@ int main(int argc, char* argv[])
 		getline(cin, userInput);
 		if (!userInput.empty())
 			pillarPath = userInput;
+		cout << "Rotation angle (" << rotation << " deg)" << endl;
+		getline(cin, userInput);
+		if (!userInput.empty())
+			rotation = userInput;
 		cout << "Pillar magnetic moment (" << magMoment << " emu)" << endl;
 		getline(cin, userInput);
 		if (!userInput.empty())
@@ -121,6 +127,7 @@ int main(int argc, char* argv[])
 	int repCounter = 0;
 	vec bufferPos(0, 0, 0);
 	double counterAssistant = 0;
+	double appliedAngle = 0;
 	string buffer;
 	while (getline(fileInput, buffer)) {
 		if (buffer.empty() || (buffer.find("%") == 0)) {
@@ -137,6 +144,14 @@ int main(int argc, char* argv[])
 		pDip[lineCounter] = pDip[lineCounter] * 100; // To cm
 		pDip[lineCounter].z = pDip[lineCounter].z + STANDOFF;
 		lineCounter++;
+
+		//Apply rotation
+
+		appliedAngle = PI * stod(rotation, nullptr) / 180;
+		bufferPos.x = cos(appliedAngle)*pDip[lineCounter].x - sin(appliedAngle)*pDip[lineCounter].y;
+		bufferPos.y = sin(appliedAngle)*pDip[lineCounter].x + cos(appliedAngle)*pDip[lineCounter].y;
+		bufferPos.z = pDip[lineCounter].z;
+		pDip[lineCounter] = bufferPos;
 	}
 
 	fileInput.close();
@@ -243,7 +258,7 @@ int main(int argc, char* argv[])
 	cout << "DONE" << endl;
 
 	cout << "Program done!" << endl;
-	if(argc < 3)
+	if(argc < 4)
 		getchar();
 
 }
