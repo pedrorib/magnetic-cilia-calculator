@@ -12,8 +12,7 @@
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
 #define DEBUG 0
-#define PARALLEL 1
-#define STANDOFF 0.02;
+#define STANDOFF 0.02
 
 int main(int argc, char* argv[])
 {
@@ -89,7 +88,7 @@ int main(int argc, char* argv[])
 	cout << "Maximum # of dipoles: " << MAXDIPSIZE << endl;
 
 	/*-----------------ALLOCATION----------------*/
-	
+
 	cout << "Allocating space...";
 
 	vec *hInc, **pInc, *pDip, *mDip, **hRed, *pPil;
@@ -132,7 +131,7 @@ int main(int argc, char* argv[])
 		if (buffer.empty() || (buffer.find("%") == 0)) {
 			continue;
 		}
-		
+
 		istringstream ss(buffer);
 		ss >> bufferPos.x >> bufferPos.y >> bufferPos.z >> pDip[lineCounter].x >> pDip[lineCounter].y >> pDip[lineCounter].z;
 		if (repCounter == 0)
@@ -162,7 +161,7 @@ int main(int argc, char* argv[])
 	pDip = (vec *)realloc(pDip, (lineCounter + 1) * sizeof(vec)); //# of lines determined -> DEFLATE
 	mDip = (vec *)realloc(mDip, (lineCounter + 1) * sizeof(vec));
 	hInc = (vec *)realloc(hInc, (lineCounter + 1) * sizeof(vec));
-	
+
 	/*---------------COMPUTE MAGNETIZATION VECTOR----------------*/
 
 	for (int i = 0; i < lineCounter - repCounter; i++) {
@@ -178,7 +177,7 @@ int main(int argc, char* argv[])
 	/*----------DEGUG ONLY -> DUMP POS AND MAG--------------*/
 
 #if DEBUG == 1
-	
+
 	ofstream mDipFile, pDipFile;
 
 	pDipFile.open("C:\\Users\\pedro\\Desktop\\pDip.txt");
@@ -218,7 +217,11 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
 	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
 #else
+#if PARALLEL == 1
 	cout << "Computation completed in " << (t_f - t_i) / (std::thread::hardware_concurrency() * CLOCKS_PER_SEC) << " seconds!" << endl;
+#else
+	cout << "Computation completed in " << (t_f - t_i) / CLOCKS_PER_SEC << " seconds!" << endl;
+#endif
 #endif // WIN32
 
 	/*---------------WRITE OUTPUT-----------------------------*/
@@ -226,7 +229,7 @@ int main(int argc, char* argv[])
 	ofstream sendOutput;
 
 	sendOutput.open(outputFile);
-	
+
 	cout << "Sending data to " << outputFile << endl << "...";
 
 	sendOutput << "Magfield calculator - openMP version" << endl;
