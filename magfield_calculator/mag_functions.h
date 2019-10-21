@@ -7,7 +7,6 @@
 #include <thread>
 
 #define PARALLEL 1
-#define PARALLEL 1
 #define PI 3.14159265358979323846
 
 #ifndef MAGCAL
