@@ -243,6 +243,7 @@ int main(int argc, char* argv[])
 	cout << "DONE" << endl;
 
 	cout << "Program done!" << endl;
-	getchar();
+	if(argc < 3)
+		getchar();
 
 }
