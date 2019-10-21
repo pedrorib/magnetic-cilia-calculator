@@ -1,10 +1,6 @@
-C:\Users\pedro\Desktop\teste_displacement.txt
-C:\Users\pedro\Desktop\pillar_location.txt
+C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\outputFEM\teste_displacement_1.txt
+C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\pillar_location.txt
 0.022
 3
 50
-C:\Users\pedro\Desktop\teste_openmp.txt
-xt
-
-
-
+C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\output_opemMP.txt

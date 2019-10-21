@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	getline(config, resSize);
 	getline(config, outputFile);
 
-	if (argc == 3) {
+	if (argc == 4) {
 		if (strcmp(argv[1], "-s"))
 			bool flagSilent = true;
 		else {
@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 		dataPath = argv[2];
+		outputFile = argv[3];
 	}
 	else if (argc > 3) {
 		cout << "Too many arguments" << endl;
