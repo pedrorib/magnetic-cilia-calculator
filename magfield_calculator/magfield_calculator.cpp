@@ -31,15 +31,10 @@ int main(int argc, char* argv[])
 	getline(config, resSize);
 	getline(config, outputFile);
 
-	if (argc == 4) {
-		if (strcmp(argv[1], "-s"))
-			bool flagSilent = true;
-		else {
-			cout << "Unknown flag (" << argv[1] << ")" << endl;
-			return 0;
-		}
-		dataPath = argv[2];
-		outputFile = argv[3];
+	if (argc == 3) {
+		flagSilent = true;
+		dataPath = argv[1];
+		outputFile = argv[2];
 	}
 	else if (argc > 3) {
 		cout << "Too many arguments" << endl;
@@ -47,7 +42,7 @@ int main(int argc, char* argv[])
 	}
 
 
-	if (!flagSilent) {
+	if (flagSilent == false) {
 		cout << "Paste path to mechanical data location (" << dataPath << ")" << endl;
 		getline(cin, userInput);
 		if (!userInput.empty())
