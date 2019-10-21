@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 		outputFile = argv[2];
 		rotation = argv[3];
 	}
-	else if (argc > 3) {
+	else if (argc > 4) {
 		cout << "Too many arguments" << endl;
 		return 0;
 	}
