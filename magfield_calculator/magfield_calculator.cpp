@@ -11,7 +11,7 @@
 
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
-#define DEBUG 0
+#define DEBUG 1
 #define STANDOFF 0.02
 
 int main(int argc, char* argv[])
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 		if (bufferPos.z == counterAssistant)
 			repCounter++;
 		pDip[lineCounter] = pDip[lineCounter] + bufferPos;
-		pDip[lineCounter] = pDip[lineCounter] * 100; // To cm
+		pDip[lineCounter] = pDip[lineCounter] / 10000; // To cm - INPUT IN MICRON!
 		pDip[lineCounter].z = pDip[lineCounter].z + STANDOFF;
 		lineCounter++;
 
