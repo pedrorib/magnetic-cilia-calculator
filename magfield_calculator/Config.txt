@@ -1,6 +1,7 @@
-C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\outputFEM\teste_displacement_1.txt
-C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\pillar_location.txt
+/homes/pribeiro/Documents/simData/outputFEM/teste_displacement_1.txt
+/homes/pribeiro/Documents/simData/pillar_location.txt
+0
 0.022
-3
-50
-C:\Users\pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulations\output_opemMP.txt
+5
+128
+/homes/pribeiro/Documents/simData/outputMag/magField_1.txt

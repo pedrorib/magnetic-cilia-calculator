@@ -11,7 +11,7 @@
 
 #define MAXDIPSIZE 32768
 #define MBSIZE 1048576
-#define DEBUG 1
+#define DEBUG 0
 #define STANDOFF 0.02
 
 int main(int argc, char* argv[])
