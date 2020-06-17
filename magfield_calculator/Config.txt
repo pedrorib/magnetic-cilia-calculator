@@ -1,7 +1,8 @@
-/homes/pribeiro/Documents/simData/outputFEM/teste_displacement_1.txt
-/homes/pribeiro/Documents/simData/pillar_location.txt
+D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\deformationInput\3000um_400um
+D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\pillar_location.txt
 0
-0.022
+1
 5
 128
-/homes/pribeiro/Documents/simData/outputMag/magField_1.txt
+D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\magneticOutput\3000um_400um
+um
