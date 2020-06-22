@@ -1,8 +1,8 @@
-D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\deformationInput\3000um_400um
+D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\deformationInput\2000um_400um
 D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\pillar_location.txt
 0
 1
 5
 128
-D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\magneticOutput\3000um_400um
+D:\Users\Pedro\OneDrive - Universidade de Lisboa\diss\QMUL_1stRound\simulation_study\magneticOutput\2000um_400um
 um

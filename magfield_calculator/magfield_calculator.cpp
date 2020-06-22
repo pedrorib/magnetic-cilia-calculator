@@ -311,6 +311,20 @@ int main(int argc, char* argv[])
 			}
 			//sendOutput << endl;
 		}
+
+		//-------------FREE MEMORY------------------------------
+
+		for (int i = 0; i < intResSize; i++) {
+			free(pInc[i]);
+			free(hRed[i]);
+		}
+
+		free(hInc);
+		free(hRed);
+		free(pInc);
+		free(pDip);
+		free(mDip);
+		free(pPil);
 	}
 
 	cout << "DONE" << endl;
