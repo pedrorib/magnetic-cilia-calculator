@@ -6,7 +6,7 @@
 #include <time.h>
 #include <thread>
 
-#define PARALLEL 1
+#define PARALLEL 1 //Enable parallelization using OpenMP
 #define PI 3.14159265358979323846
 
 #ifndef MAGCAL

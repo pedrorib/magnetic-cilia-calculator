@@ -11,6 +11,8 @@
 #include <time.h>
 #include <float.h>
 
+//VECLIB - provides a structure for 3D vectors, as well as vector operations
+
 using namespace std;
 
 vec::vec() {

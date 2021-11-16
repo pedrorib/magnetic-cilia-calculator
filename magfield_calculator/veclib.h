@@ -13,6 +13,8 @@
 #ifndef VECLIB
 #define VECLIB
 
+//VECLIB - provides a structure for 3D vectors, as well as vector operations
+
 class vec {
 public:
 	double x, y, z;

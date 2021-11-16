@@ -12,16 +12,19 @@
 #include <filesystem>
 #include <sstream>
 
-#define MAXDIPSIZE 32768
-#define MBSIZE 1048576
-#define DEBUG 0
-#define STANDOFF 0.02
+#define MAXDIPSIZE 32768 //Maximum number of dipoles that a cilia may have
+#define MBSIZE 1048576 //Size of 1 MB
+#define DEBUG 0 //Debug flag (set 1 to debug)
+#define STANDOFF 0.02 //Distance between bottomost dipole and sensor surface (to prevent the appearance of singularities)
 
 using namespace std;
 using namespace std::filesystem;
 
 int fileCounter(std::string scannedDir) {
-	
+	//fileCounter - counts the number of files within a directory
+	//Input vars - std::string scannedDir: path of the directory that contains the files to be counted
+	//Returns int with the number of files within the directory
+
 	std::size_t number_of_files = 0u;
 
 	namespace fs = std::experimental::filesystem;
@@ -36,12 +39,14 @@ int fileCounter(std::string scannedDir) {
 
 int main(int argc, char* argv[])
 {
+	//Main function
 
 	string dataPath, magMoment, simSize, userInput, resSize, outputFile, pillarPath, rotation;
 	vector<string> dataPathArray;
 
 	bool flagSilent = false;
-
+	
+	//Read last configuration from Config.txt file
 	fstream config;
 	config.open("Config.txt", fstream::in | fstream::out);
 	getline(config, dataPath);
@@ -52,6 +57,7 @@ int main(int argc, char* argv[])
 	getline(config, resSize);
 	getline(config, outputFile);
 
+	//If configuration values are provided as command line arguments, skip asking user for parameters
 	if (argc == 4) {
 		flagSilent = true;
 		dataPath = argv[1];
@@ -63,36 +69,39 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
+	//Request parameters to user if configuration parameters were not provided as command line arguments
+	//Previous configuration value is suggested to user automatically
 	if (flagSilent == false) {
-		cout << "Paste path to mechanical data location (" << dataPath << ")" << endl;
+		cout << "Paste path to mechanical data location (" << dataPath << ")" << endl; //Deformation data location (file or directory with files)
 		getline(cin, userInput);
 		if (!userInput.empty())
 			dataPath = userInput;
-		cout << "Paste path to pillar location (" << pillarPath << ")" << endl;
+		cout << "Paste path to pillar location (" << pillarPath << ")" << endl; //(Path to file with cilia locations over the sensor plane - one location per line)
 		getline(cin, userInput);
 		if (!userInput.empty())
 			pillarPath = userInput;
-		cout << "Rotation angle (" << rotation << " deg)" << endl;
+		cout << "Rotation angle (" << rotation << " deg)" << endl; //(Define cilia tilt angle (rotation around the z axis)
 		getline(cin, userInput);
 		if (!userInput.empty())
 			rotation = userInput;
-		cout << "Pillar magnetic moment (" << magMoment << " emu)" << endl;
+		cout << "Pillar magnetic moment (" << magMoment << " emu)" << endl; //(Define cilia ABSOLUTE magnetic moment)
 		getline(cin, userInput);
 		if (!userInput.empty())
 			magMoment = userInput;
-		cout << "Square area under study - edge size? (" << simSize << " mm)" << endl;
+		cout << "Square area under study - edge size? (" << simSize << " mm)" << endl; //Define size of the sensing area under the cilia - input is the size of the side of a square
 		getline(cin, userInput);
 		if (!userInput.empty())
 			simSize = userInput;
-		cout << "Grid size (" << resSize << ")" << endl;
+		cout << "Grid size (" << resSize << ")" << endl; //Define the number of points used to discretize the sensing area - a perfect square is recommended
 		getline(cin, userInput);
 		if (!userInput.empty())
 			resSize = userInput;
-		cout << "Output file (" << outputFile << ")" << endl;
+		cout << "Output file (" << outputFile << ")" << endl; //Path of output file or directory
 		getline(cin, userInput);
 		if (!userInput.empty())
 			outputFile = userInput;
 
+		//Save new configuration in "Config.txt"
 		config.clear();
 		config.seekg(0, ios::beg);
 		config << dataPath << endl;
@@ -106,7 +115,9 @@ int main(int argc, char* argv[])
 	}
 
 	bool passYes = false;
-
+	
+	//Ask user if path provided is a directory containing several cilia deformation files
+	//If it is, then compute the magnetization for each deformed configuration within the directory
 	while (!passYes) {
 		
 		cout << "Is the mechanical data a folder with an array of files? [Y/N]" << endl;
@@ -121,7 +132,7 @@ int main(int argc, char* argv[])
 			for (int i = 1; i <= fileCounter(dataPath); i++) {
 				stringstream ss;
 				ss << i;
-				dataPathArray.push_back(dataPath + "\\teste_displacement_" + ss.str() + ".txt");
+				dataPathArray.push_back(dataPath + "\\teste_displacement_" + ss.str() + ".txt"); //deformation file naming must conform with this format
 			}
 			passYes = true;
 		}
@@ -185,7 +196,7 @@ int main(int argc, char* argv[])
 			if (bufferPos.z == counterAssistant)
 				repCounter++;
 			pDip[lineCounter] = pDip[lineCounter] + bufferPos;
-			pDip[lineCounter] = pDip[lineCounter] / 10000; // To cm - INPUT IN MICRON!
+			pDip[lineCounter] = pDip[lineCounter] / 10000; // Conversion from micron (input) to cm (computation is performed in cgs units)!
 			pDip[lineCounter].z = pDip[lineCounter].z + STANDOFF;
 			lineCounter++;
 
