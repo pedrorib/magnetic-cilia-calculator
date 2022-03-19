@@ -7,9 +7,9 @@
 #include <cstring>  
 #include <string>
 #include <sstream>  
-#include <math.h>
-#include <time.h>
-#include <float.h>
+#include <cmath>
+#include <ctime>
+#include <cfloat>
 
 //VECLIB - provides a structure for 3D vectors, as well as vector operations
 

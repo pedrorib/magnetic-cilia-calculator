@@ -3,7 +3,7 @@
 #include "veclib.h"
 #include <string>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 #include <thread>
 
 #define PARALLEL 1 //Enable parallelization using OpenMP

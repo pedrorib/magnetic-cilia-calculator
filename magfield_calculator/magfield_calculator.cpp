@@ -4,19 +4,21 @@
 #include "pch.h"
 #include "veclib.h"
 #include "mag_functions.h"
-#include <string>
+
+#include "windows.h"
+#include <cstring>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 #include <thread>
 #include <vector>
 #include <filesystem>
 #include <sstream>
 
+
 #define MAXDIPSIZE 32768 //Maximum number of dipoles that a cilia may have
 #define MBSIZE 1048576 //Size of 1 MB
 #define DEBUG 0 //Debug flag (set 1 to debug)
 #define STANDOFF 0.02 //Distance between bottomost dipole and sensor surface (to prevent the appearance of singularities)
-
 using namespace std;
 using namespace std::filesystem;
 
@@ -37,6 +39,20 @@ int fileCounter(std::string scannedDir) {
 
 }
 
+bool DirectoryExists(string dirName) {
+	DWORD attribs = ::GetFileAttributesA(dirName.c_str());
+	if (attribs == INVALID_FILE_ATTRIBUTES) {
+		return false;
+	}
+	return true;
+}
+
+void CreateDirectoryStr(string dirName) {
+	std::wstring stemp = std::wstring(dirName.begin(), dirName.end());
+	LPCWSTR sw = stemp.c_str();
+	CreateDirectory(sw, NULL);
+}
+
 int main(int argc, char* argv[])
 {
 	//Main function
@@ -47,8 +63,15 @@ int main(int argc, char* argv[])
 	bool flagSilent = false;
 	
 	//Read last configuration from Config.txt file
+	
+	WCHAR exePath[MAX_PATH];
+	GetModuleFileNameW(NULL, exePath, MAX_PATH);
+	wstring exePathWS(exePath);
+	string exePathStr(exePathWS.begin(), exePathWS.end());
+	exePathStr = exePathStr.substr(0, exePathStr.find_last_of('\\'));
+
 	fstream config;
-	config.open("Config.txt", fstream::in | fstream::out);
+	config.open(exePathStr+"\\Config.txt", fstream::in | fstream::out);
 	getline(config, dataPath);
 	getline(config, pillarPath);
 	getline(config, rotation);
@@ -84,7 +107,7 @@ int main(int argc, char* argv[])
 		getline(cin, userInput);
 		if (!userInput.empty())
 			rotation = userInput;
-		cout << "Pillar magnetic moment (" << magMoment << " emu)" << endl; //(Define cilia ABSOLUTE magnetic moment)
+		cout << "Pillar magnetic moment (" << magMoment << " emu/cm3)" << endl; //(Define cilia ABSOLUTE magnetic moment)
 		getline(cin, userInput);
 		if (!userInput.empty())
 			magMoment = userInput;
@@ -115,11 +138,29 @@ int main(int argc, char* argv[])
 	}
 
 	bool passYes = false;
+
+	//Obtain cilium size and determine its magnetic moment from
+	//the user provided magnetization
+	int ciliumWidth, ciliumHeight;
+	double magCilium = 0;
+	string ciliumData = dataPath.substr(dataPath.find_last_of("\\") + 1);
+	//ciliumData.erase(remove(ciliumData.begin(), ciliumData.end(), 'um'), ciliumData.end());
+	sscanf_s(ciliumData.c_str(), "%dum_%dum", &ciliumHeight, &ciliumWidth);
+	magCilium = stod(magMoment) * (double)ciliumHeight * (double)ciliumWidth * (double)ciliumWidth * 1E-12 * PI / 4;
+	cout << "Cilium magnetic moment: " << magCilium << " emu" << endl;
 	
 	//Ask user if path provided is a directory containing several cilia deformation files
 	//If it is, then compute the magnetization for each deformed configuration within the directory
+	if (flagSilent) {
+					for (int i = 1; i <= fileCounter(dataPath); i++) {
+				stringstream ss;
+				ss << i;
+				dataPathArray.push_back(dataPath + "\\teste_displacement_" + ss.str() + ".txt"); //deformation file naming must conform with this format
+			}
+			passYes = true;
+	}
 	while (!passYes) {
-		
+
 		cout << "Is the mechanical data a folder with an array of files? [Y/N]" << endl;
 		getline(cin, userInput);
 
@@ -137,6 +178,7 @@ int main(int argc, char* argv[])
 			passYes = true;
 		}
 	}
+	cout << dataPathArray[1] << endl;
 
 	for (int fileNum = 1; fileNum < dataPathArray.size(); fileNum++) {
 
@@ -221,7 +263,7 @@ int main(int argc, char* argv[])
 
 		cout << lineCounter + 1 << " data points read! - Optimizing memory allocation" << endl;
 		cout << "Z increases every " << repCounter << " lines." << endl;
-		cout << "Magnetization of each dipole: " << stod(magMoment, nullptr) / (double)lineCounter << " emu" << endl;
+		cout << "Magnetization of each dipole: " << magCilium / (double)lineCounter << " emu" << endl;
 
 		pDip = (vec*)realloc(pDip, (lineCounter + 1) * sizeof(vec)); //# of lines determined -> DEFLATE
 		mDip = (vec*)realloc(mDip, (lineCounter + 1) * sizeof(vec));
@@ -236,7 +278,7 @@ int main(int argc, char* argv[])
 			mDip[i] = mDip[i - repCounter];
 		}
 		for (int i = 0; i < lineCounter; i++) {
-			mDip[i] = -stod(magMoment, nullptr) * mDip[i] / (double)lineCounter;
+			mDip[i] = -magCilium * mDip[i] / (double)lineCounter;
 		}
 
 		/*----------DEGUG ONLY -> DUMP POS AND MAG--------------*/
@@ -275,8 +317,8 @@ int main(int argc, char* argv[])
 
 		dSimSize = 0.001 * stod(simSize, nullptr);
 		t_i = clock();
-		magCalc(hInc, hRed, mDip, pDip, pPil, 0.1 * stod(simSize, nullptr), lineCounter, intResSize, pilLineCounter);
-		//magCalc(hInc, hRed, mDip, pDip, 0.1*stod(simSize, nullptr), lineCounter, intResSize);
+		//magCalc(hInc, hRed, mDip, pDip, pPil, 0.1 * stod(simSize, nullptr), lineCounter, intResSize, pilLineCounter);
+		magCalc(hInc, hRed, mDip, pDip, 0.1*stod(simSize, nullptr), lineCounter, intResSize);
 		t_f = clock();
 
 #ifdef _WIN32
@@ -293,7 +335,11 @@ int main(int argc, char* argv[])
 
 		ofstream sendOutput;
 
-		string outputFileFull;
+		string outputFileFull, outputFolderPath;
+
+		if (!DirectoryExists(outputFile)) {
+			CreateDirectoryStr(outputFile);
+		}
 
 		if (userInput == "N") {
 			sendOutput.open(outputFile);
@@ -303,10 +349,8 @@ int main(int argc, char* argv[])
 			ss << fileNum;
 
 			outputFileFull = outputFile + "\\" + "mag_output_" + ss.str() + ".txt";
-
 			sendOutput.open(outputFileFull);
 		}
-
 
 		cout << "Sending data to " << outputFileFull << endl << "...";
 

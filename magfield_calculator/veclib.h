@@ -7,9 +7,9 @@
 #include <cstring>  
 #include <string>
 #include <sstream>  
-#include <math.h>
-#include <time.h>
-#include <float.h>
+#include <cmath>
+#include <ctime>
+#include <cfloat>
 #ifndef VECLIB
 #define VECLIB
 

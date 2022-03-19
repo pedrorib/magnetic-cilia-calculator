@@ -3,8 +3,9 @@
 #include "mag_functions.h"
 #include <string>
 #include <iostream>
-#include <time.h>
+#include <ctime>
 #include <thread>
+#include <cstdio>
 
 //Library containing functions to calculate magnetic fields
 
@@ -47,7 +48,7 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 				calculatedField[k] = vec(0, 0, 0);
 				for (l = 0; l < numPillars; l++) {
 					r[k] = currPos[k] - (posDipoles[k] + dipoleDisplacement[l]);
-					calculatedField[k] = calculatedField[k] + ((double)3 * r[k] * (magDipoles[k] * r[k]) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3)) / 4 / PI;
+					calculatedField[k] = calculatedField[k] + ((double)3 * r[k] * (magDipoles[k] * r[k]) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3)) /*/ 4 / PI*/;
 				}
 			}
 #pragma omp parallel for reduction(+: tempX) reduction(+: tempY) reduction(+: tempZ)
@@ -68,9 +69,10 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
 				currPos[k].z = 0;
 				r[k] = currPos[k] - posDipoles[k];
-				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k])) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3);
+				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k])) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3) /*/ 4 / PI*/;
 			}
 			for (int k = 0; k < inputSize; k++) {
+				//cout << calculatedField[k] << endl;
 				tempX += calculatedField[k].x;
 				tempY += calculatedField[k].y;
 				tempZ += calculatedField[k].z;
@@ -78,6 +80,8 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 			destination[i][j].x = tempX;
 			destination[i][j].y = tempY;
 			destination[i][j].z = tempZ;
+		}
+	}
 #endif
 }
 
@@ -102,49 +106,51 @@ void magCalc(vec *calculatedField, vec **destination, vec *magDipoles, vec *posD
 
 	using namespace std;
 	for (int i = 0; i < gridSize; i++) {
-	cout << "Computation - " << 100 * (double)i / gridSize << "% complete" << endl;
-	for (int j = 0; j < gridSize; j++) {
-	tempX = 0;
-	tempY = 0;
-	tempZ = 0;
+		cout << "Computation - " << 100 * (double)i / gridSize << "% complete" << endl;
+		for (int j = 0; j < gridSize; j++) {
+			tempX = 0;
+			tempY = 0;
+			tempZ = 0;
 
-#if PARALLEL == 1
+	#if PARALLEL == 1
 
-#pragma omp parallel for 
-	for (int k = 0; k < inputSize; k++) {
-		currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
-		currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
-		currPos[k].z = 0;
-		r[k] = currPos[k] - posDipoles[k];
-		calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k]) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3)) / 4 / PI;
-	}
-#pragma omp parallel for reduction(+: tempX) reduction(+: tempY) reduction(+: tempZ)
-	for (int k = 0; k < inputSize; k++) {
-		tempX += calculatedField[k].x;
-		tempY += calculatedField[k].y;
-		tempZ += calculatedField[k].z;
-	}
-		destination[i][j].x = tempX;
-		destination[i][j].y = tempY;
-		destination[i][j].z = tempZ;
-	}
-}
+	#pragma omp parallel for 
+			for (int k = 0; k < inputSize; k++) {
+				currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
+				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
+				currPos[k].z = 0;
+				r[k] = currPos[k] - posDipoles[k];
+				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k]) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3)) /*/ 4 / PI*/;
+			}
+	#pragma omp parallel for reduction(+: tempX) reduction(+: tempY) reduction(+: tempZ)
+			for (int k = 0; k < inputSize; k++) {
+				tempX += calculatedField[k].x;
+				tempY += calculatedField[k].y;
+				tempZ += calculatedField[k].z;
+			}
+			destination[i][j].x = tempX;
+			destination[i][j].y = tempY;
+			destination[i][j].z = tempZ;
+		}
+		}
 
-#else
-	for (int k = 0; k < inputSize; k++) {
-		currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
-		currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
-		currPos[k].z = 0;
-		r[k] = currPos[k] - posDipoles[k];
-		calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k])) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3);
+	#else
+			for (int k = 0; k < inputSize; k++) {
+				currPos[k].x = -dim / 2 + dim * (double)i / (double)(gridSize - 1);
+				currPos[k].y = -dim / 2 + dim * (double)j / (double)(gridSize - 1);
+				currPos[k].z = 0;
+				r[k] = currPos[k] - posDipoles[k];
+				calculatedField[k] = ((double)3 * r[k] * (magDipoles[k] * r[k]) / pow(r[k].abs(), 5) - magDipoles[k] / pow(r[k].abs(), 3)) /*/ 4 / PI*/;
+			}
+			for (int k = 0; k < inputSize; k++) {
+				tempX += calculatedField[k].x;
+				tempY += calculatedField[k].y;
+				tempZ += calculatedField[k].z;
+			}
+			destination[i][j].x = tempX;
+			destination[i][j].y = tempY;
+			destination[i][j].z = tempZ;
+		}
 	}
-	for (int k = 0; k < inputSize; k++) {
-		tempX += calculatedField[k].x;
-		tempY += calculatedField[k].y;
-		tempZ += calculatedField[k].z;
-	}
-	destination[i][j].x = tempX;
-	destination[i][j].y = tempY;
-	destination[i][j].z = tempZ;
 #endif
 }
